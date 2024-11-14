@@ -10,6 +10,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreen extends State<HomeScreen> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,10 +25,9 @@ class _HomeScreen extends State<HomeScreen> {
           itemBuilder: (context, index) {
             Candi m_candi = candiList[index];
             return ItemCard(candi: m_candi);
-
-
           },
       ),
+
       // TODO: 2: Buat body dengan GridView.Builder.
       // TODO: 3: Buat ItemCard sebagai return value dari GridView.builder
     );
