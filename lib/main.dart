@@ -13,8 +13,8 @@ void main() {
       routes: {
         '/': (Context) => Home(),
         '/home': (Context) => Home(),
-        '/login': (Context) => SignInScreen(),
-        '/register': (Context) => SignUpScreen(),
+        '/signin': (Context) => SignInScreen(),
+        '/signup': (Context) => SignUpScreen(),
         '/search': (Context) => SearchScreen(),
         '/profile': (Context) => const ProfileScreen(),
       }

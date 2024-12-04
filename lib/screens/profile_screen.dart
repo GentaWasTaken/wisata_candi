@@ -1,4 +1,6 @@
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wisata_candi/widgets/profile_item_info.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,19 +17,84 @@ class _ProfileScreen extends State<ProfileScreen> {
   String userName = 'Genta 7740';
   String fullName = 'Genta Wibawa';
   int favoriteCandiCount = 0;
+  Future<Map<String, String>> _retrieveAndDecryptDataFromPrefs(
+      Future<SharedPreferences> prefs,
+      ) async {
+    final sharedPreferences = await prefs;
 
-  // TODO: 5 func sign in.
-  void signIn() {
-    setState(() {
-      this.isSigned = !this.isSigned;
-    });
+    // Ambil data dari SharedPreferences
+    final encryptedUsername = sharedPreferences.getString('username') ?? '';
+    final encryptedPassword = sharedPreferences.getString('password') ?? '';
+    final encryptedFullname = sharedPreferences.getString('fullname') ?? '';
+    final keyString = sharedPreferences.getString('key') ?? '';
+    final ivString = sharedPreferences.getString('iv') ?? '';
+
+    // Validasi jika ada data yang kosong
+    if (encryptedUsername.isEmpty ||
+        encryptedPassword.isEmpty ||
+        encryptedFullname.isEmpty ||
+        keyString.isEmpty ||
+        ivString.isEmpty) {
+      print('Stored credentials are invalid or incomplete');
+      return {};
+    }
+
+    // Dekripsi data
+    final encrypt.Key key = encrypt.Key.fromBase64(keyString);
+    final iv = encrypt.IV.fromBase64(ivString);
+
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+    final decryptedUsername = encrypter.decrypt64(encryptedUsername, iv: iv);
+    final decryptedPassword = encrypter.decrypt64(encryptedPassword, iv: iv);
+    final decryptedFullname = encrypter.decrypt64(encryptedFullname, iv: iv);
+
+    print('Decrypted Username: $decryptedUsername');
+    print('Decrypted Password: $decryptedPassword');
+    print('Decrypted Fullname: $decryptedFullname');
+
+    // Mengembalikan data terdeskripsi
+    return {'username': decryptedUsername, 'password': decryptedPassword, 'fulname': decryptedFullname};
   }
-  // TODO: 6 func sign out.
-  void signOut() {
-    setState(() {
-      this.isSigned = !this.isSigned;
-    });
+  void _loadUserData() async {
+    final Future<SharedPreferences> prefsFuture =
+    SharedPreferences.getInstance();
+    final data = await _retrieveAndDecryptDataFromPrefs(prefsFuture);
+    if (data.isNotEmpty) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        isSigned = prefs.getBool('isSignIn') ?? true;
+        fullName = data['fulname'] ?? 'Nama belum diatur';
+        userName = data['username'] ?? 'Pengguna belum diatur';
+      });
+    }
 
+  }
+  //TODO: 5. Implementasi fungsi SignIn
+  void signIn(){
+    // setState(() {
+    //   isSignedIn = !isSignedIn;
+    // });
+    Navigator.pushNamed(context, '/signin');
+  }
+  //TODO: 6. Implementasi fungsi SignOut
+  void signOut() async {
+    // setState(() {
+    //   isSignedIn = !isSignedIn;
+    // });
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Hapus semua data dari SharedPreferences
+    setState(() {
+      isSigned = false;
+      fullName = " DummyName";
+      userName = " DummyUsername";
+      favoriteCandiCount = 0;
+    });
+    Navigator.pushReplacementNamed(context, '/signin');
+  }
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
   }
   @override
   Widget build(BuildContext context) {

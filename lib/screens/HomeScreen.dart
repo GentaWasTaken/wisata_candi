@@ -3,6 +3,7 @@ import 'package:wisata_candi/data/candi_data.dart';
 import 'package:wisata_candi/widgets/ItemCard.dart';
 
 import '../models/candi.dart';
+import 'detail_screen.dart';
 class HomeScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _HomeScreen();
@@ -24,7 +25,15 @@ class _HomeScreen extends State<HomeScreen> {
           itemCount: candiList.length,
           itemBuilder: (context, index) {
             Candi m_candi = candiList[index];
-            return ItemCard(candi: m_candi);
+            return InkWell(
+                onTap: (){
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context)=> DetailScreen(candi: m_candi))
+                  );
+                },
+                child: ItemCard(candi: m_candi)
+            );
           },
       ),
 

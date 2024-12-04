@@ -1,11 +1,64 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wisata_candi/models/candi.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen extends StatefulWidget {
+
   final Candi candi;
-  const DetailScreen({super.key, required this.candi});
+  @override
+  State<StatefulWidget> createState() => _DetailScreen(candi: candi);
+  DetailScreen({super.key, required this.candi});
+}
+
+
+class _DetailScreen extends State<DetailScreen> {
+  final Candi candi;
+  bool isFavorite = false;
+  bool isSignedIn = false;
+
+
+  _DetailScreen({required this.candi});
+  @override
+  void initState(){
+    super.initState();
+    _checkSignInStatus();
+    _loadFavouriteStatus();
+  }
+  void _checkSignInStatus() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool signedIn = prefs.getBool('isSignedIn') ?? false;
+    setState(() {
+      isSignedIn = signedIn;
+    });
+  }
+  //periksa status favorite
+  void _loadFavouriteStatus() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool favorite = prefs.getBool('favorite_${widget.candi.name}') ?? false;
+    setState(() {
+      isFavorite = favorite;
+    });
+  }
+  Future<void> _toggleFavourite() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    //periksa apakah pengguna sudah signin
+    if(!isSignedIn) {
+      //jika belum signin arahkan ke sign in screen
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        Navigator.pushReplacementNamed(context, '/signin');
+      });
+      return;
+    }
+
+    bool favoriteStatus = !isFavorite;
+    prefs.setBool('favorite_${widget.candi.name}', favoriteStatus);
+
+    setState((){
+      isFavorite = favoriteStatus;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +114,13 @@ class DetailScreen extends StatelessWidget {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.favorite_border),
+                        onPressed: () {
+                          _toggleFavourite();
+                        },
+                        icon: Icon(isSignedIn && isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                            color: isSignedIn && isFavorite ? Colors.red : null),
                       )
                     ],
                   ),

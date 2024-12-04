@@ -1,5 +1,7 @@
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInScreen extends StatefulWidget {
   @override
@@ -15,6 +17,85 @@ class _SignInScreen extends State<SignInScreen> {
   String _errorMessage = "";
   bool _isSignin = false;
   bool _obsecurePassword = false;
+  Future<Map<String, String>> _retrieveAndDecryptDataFromPrefs(
+      Future<SharedPreferences> prefs,
+      ) async {
+    final sharedPreferences = await prefs;
+
+    // Ambil data dari SharedPreferences
+    final encryptedUsername = sharedPreferences.getString('username') ?? '';
+    final encryptedPassword = sharedPreferences.getString('password') ?? '';
+    final keyString = sharedPreferences.getString('key') ?? '';
+    final ivString = sharedPreferences.getString('iv') ?? '';
+
+    // Validasi jika ada data yang kosong
+    if (encryptedUsername.isEmpty ||
+        encryptedPassword.isEmpty ||
+        keyString.isEmpty ||
+        ivString.isEmpty) {
+      print('Stored credentials are invalid or incomplete');
+      return {};
+    }
+
+    // Dekripsi data
+    final encrypt.Key key = encrypt.Key.fromBase64(keyString);
+    final iv = encrypt.IV.fromBase64(ivString);
+
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+    final decryptedUsername = encrypter.decrypt64(encryptedUsername, iv: iv);
+    final decryptedPassword = encrypter.decrypt64(encryptedPassword, iv: iv);
+
+    print('Decrypted Username: $decryptedUsername');
+    print('Decrypted Password: $decryptedPassword');
+
+    // Mengembalikan data terdeskripsi
+    return {'username': decryptedUsername, 'password': decryptedPassword};
+  }
+
+
+  void _signIn() async {
+    try {
+      final Future<SharedPreferences> prefsFuture =
+      SharedPreferences.getInstance();
+
+      final String username = _usernameController.text.toLowerCase();
+      final String password = _passwordController.text;
+      print('Sign in attempt');
+
+      if (username.isNotEmpty && password.isNotEmpty) {
+        final SharedPreferences prefs = await prefsFuture;
+        final data = await _retrieveAndDecryptDataFromPrefs(prefsFuture);
+        if (data.isNotEmpty) {
+          final decryptedUsername = data['username'];
+          final decryptedPassword = data['password'];
+
+          if (username == decryptedUsername && password == decryptedPassword) {
+            _errorMessage = '';
+            _isSignin = true;
+            prefs.setBool('isSignedIn', true);
+            //Pemanggilan untuk menghapus semua halaman dalam tumpukan navigasi
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            });
+            //Sign in berhasil, navigasi ke layar utama
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacementNamed(context, '/home');
+            });
+            print("Sign in succeeded");
+          } else {
+            print('Username or password is incorrect: ${username} == ${decryptedUsername} || ${password} == ${decryptedPassword}');
+          }
+        } else {
+          print('No stored credentials found');
+        }
+      } else {
+        print('Username and password cannot be empty');
+        // Tambahkan pean untuk kasus ketika username atau password kosong
+      }
+    } catch (e) {
+      print('An error occured: $e');
+    }
+  }
 
 
   @override
@@ -23,7 +104,7 @@ class _SignInScreen extends State<SignInScreen> {
       // TODO: Pasang AppBar;
       appBar: AppBar(
         title: const Text("Sign in"),
-
+        automaticallyImplyLeading: false,
       ),
       // TODO: Pasang Body;
       body: Center(
@@ -63,7 +144,7 @@ class _SignInScreen extends State<SignInScreen> {
                   // TODO: Pasang ElevatedButton Sign in;
                   SizedBox(height: 20,),
                   ElevatedButton(
-                      onPressed: (){},
+                      onPressed: (){_signIn();},
                       child: Text("Login"),
                   ),
                   SizedBox(height: 20,),
@@ -78,7 +159,7 @@ class _SignInScreen extends State<SignInScreen> {
                           decoration: TextDecoration.underline,
                           fontSize: 16,
                         ),
-                        recognizer: TapGestureRecognizer()..onTap = (){},
+                        recognizer: TapGestureRecognizer()..onTap = (){ Navigator.pushNamed(context, "/signup");},
                       )
                     ]
                   ))
