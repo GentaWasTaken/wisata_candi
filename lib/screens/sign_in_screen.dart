@@ -69,7 +69,7 @@ class _SignInScreen extends State<SignInScreen> {
           final decryptedUsername = data['username'];
           final decryptedPassword = data['password'];
 
-          if (username == decryptedUsername && password == decryptedPassword) {
+          if (username == decryptedUsername?.toLowerCase() && password == decryptedPassword) {
             _errorMessage = '';
             _isSignin = true;
             prefs.setBool('isSignedIn', true);

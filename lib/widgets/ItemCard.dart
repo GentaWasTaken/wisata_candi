@@ -19,22 +19,25 @@ class ItemCard extends StatelessWidget {
         children: [
           // TODO: 3: Buat image sebagai child dari column.
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: CachedNetworkImage(
-                imageUrl: candi.imageUrls[0],
-                width: double.infinity,
-                height: 120,
-                fit : BoxFit.cover,
-                placeholder: (context,
-                    url) => Container(
-                  width: 120,
+            child: Hero(
+              tag: candi.imageAsset,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: CachedNetworkImage(
+                  imageUrl: candi.imageUrls[0],
+                  width: double.infinity,
                   height: 120,
-                  color: Colors.deepPurple[50],
-                ),
-                errorWidget: (context, url, error) =>
-                const Icon(
-                  Icons.error,
+                  fit : BoxFit.cover,
+                  placeholder: (context,
+                      url) => Container(
+                    width: 120,
+                    height: 120,
+                    color: Colors.deepPurple[50],
+                  ),
+                  errorWidget: (context, url, error) =>
+                  const Icon(
+                    Icons.error,
+                  ),
                 ),
               ),
             ),

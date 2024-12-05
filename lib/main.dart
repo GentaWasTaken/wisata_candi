@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wisata_candi/data/candi_data.dart';
 import 'package:wisata_candi/screens/HomeScreen.dart';
 import 'package:wisata_candi/screens/detail_screen.dart';
+import 'package:wisata_candi/screens/favorite_screen.dart';
 import 'package:wisata_candi/screens/profile_screen.dart';
 import 'package:wisata_candi/screens/search_screen.dart';
 import 'package:wisata_candi/screens/sign_in_screen.dart';
@@ -17,6 +18,7 @@ void main() {
         '/signup': (Context) => SignUpScreen(),
         '/search': (Context) => SearchScreen(),
         '/profile': (Context) => const ProfileScreen(),
+        '/favorite': (Context) => const FavoriteScreen(),
       }
   ));
 }
@@ -38,6 +40,7 @@ class _Home extends State<Home> {
     _pages = [
       HomeScreen(),
       SearchScreen(),
+      FavoriteScreen(),
       ProfileScreen(),
     ];
   }
@@ -48,19 +51,6 @@ class _Home extends State<Home> {
     void _onItemTapped(int index) {
       setState(() {
         _selectedIndex = index;
-        switch (index) {
-          case 0:
-            //Navigator.pushNamed(context, "/home");
-            break;
-          case 1:
-            //Navigator.pushNamed(context, "/search");
-            break;
-          case 2:
-            //Navigator.pushNamed(context, "/profile");
-            break;
-          default:
-            //Navigator.pushNamed(context, "/home");
-        }
       });
     }
     return Scaffold(
@@ -74,6 +64,10 @@ class _Home extends State<Home> {
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorite',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

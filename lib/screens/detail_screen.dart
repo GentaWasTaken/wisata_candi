@@ -36,7 +36,7 @@ class _DetailScreen extends State<DetailScreen> {
   //periksa status favorite
   void _loadFavouriteStatus() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool favorite = prefs.getBool('favorite_${widget.candi.name}') ?? false;
+    bool favorite = prefs.getBool('favorite_${widget.candi.name.replaceAll(' ', '_')}') ?? false;
     setState(() {
       isFavorite = favorite;
     });
@@ -53,7 +53,7 @@ class _DetailScreen extends State<DetailScreen> {
     }
 
     bool favoriteStatus = !isFavorite;
-    prefs.setBool('favorite_${widget.candi.name}', favoriteStatus);
+    prefs.setBool('favorite_${widget.candi.name.replaceAll(' ', '_')}', favoriteStatus);
 
     setState((){
       isFavorite = favoriteStatus;
@@ -63,20 +63,27 @@ class _DetailScreen extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Detail"),
+        automaticallyImplyLeading: false,
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             Stack(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      candi.imageAsset,
-                      width: double.infinity,
-                      height: 300,
-                      fit: BoxFit.cover,
+                Hero(
+                  tag: widget.candi.imageAsset,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        candi.imageAsset,
+                        width: double.infinity,
+                        height: 300,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
@@ -89,7 +96,7 @@ class _DetailScreen extends State<DetailScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {Navigator.pop(context); },
                       icon: const Icon(Icons.arrow_back),
                     ),
                   ),
