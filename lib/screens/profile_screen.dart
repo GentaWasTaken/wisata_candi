@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wisata_candi/widgets/profile_item_info.dart';
 
+import '../data/candi_data.dart';
+import '../models/candi.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -55,6 +58,18 @@ class _ProfileScreen extends State<ProfileScreen> {
     // Mengembalikan data terdeskripsi
     return {'username': decryptedUsername, 'password': decryptedPassword, 'fulname': decryptedFullname};
   }
+  void _loadFavorites() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    for (var candi in candiList) { // allCandis adalah daftar semua Candi
+      bool isFavorite = prefs.getBool('favorite_${candi.name.replaceAll(' ', '_')}') ?? false;
+      if (isFavorite) {
+        favoriteCandiCount++;
+      }
+    }
+    setState(() {
+
+    });
+  }
   void _loadUserData() async {
     final Future<SharedPreferences> prefsFuture =
     SharedPreferences.getInstance();
@@ -95,6 +110,7 @@ class _ProfileScreen extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+    _loadFavorites();
   }
   @override
   Widget build(BuildContext context) {
@@ -183,7 +199,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                   ProfileItemInfo(icon: Icons.person, label: 'Name', value: this.fullName, iconColor: Colors.blue),
                   Divider(color: Colors.deepPurple[100],),
                   SizedBox(height: 4,),
-                  ProfileItemInfo(icon: Icons.favorite, label: 'Favorit', value: this.favoriteCandiCount > 0 ? "$favoriteCandiCount" : "0", iconColor: Colors.red),
+                  ProfileItemInfo(icon: Icons.favorite, label: 'Favorit', value: this.favoriteCandiCount > 0 ? "$favoriteCandiCount" : "Belum ada favorite", iconColor: Colors.red),
                   SizedBox(height: 4,),
                   Divider(color: Colors.deepPurple[100],),
                   SizedBox(
